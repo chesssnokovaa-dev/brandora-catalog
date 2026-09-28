@@ -1,0 +1,46 @@
+name: Обновление каталога
+
+on:
+  schedule:
+    - cron: '50 4 * * *'   # каждый день 06:50 по Мадриду (летнее время)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: catalog
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests pillow
+      - name: Собрать новые товары из Telegram
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/catalog.py
+      - name: Сохранить изменения
+        run: |
+          git config user.name "brandora-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A site names.json
+          git diff --cached --quiet || git commit -q -m "Каталог: обновление $(date -u +%F)"
+          git push
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
