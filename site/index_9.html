@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Brandora Каталог</title>
+<meta name="description" content="Полный каталог Brandora: сумки, обувь, одежда и аксессуары люксовых брендов с фото и заказом у менеджера.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Golos+Text:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#F5F4F2;--surface:#FFFFFF;--ink:#18171C;--muted:#6B6770;--line:#E4E1DE;
+  --accent:#6E2233;--accent-ink:#FFFFFF;--chip:#ECEAE7;--tile:#EDEBE8;--shade:rgba(24,23,28,.6);
+  --serif:"Prata","Playfair Display",Georgia,serif;
+  --sans:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  color-scheme:dark;--bg:#121114;--surface:#1B1A1E;--ink:#EEEAE6;--muted:#A29DA6;--line:#2C2A30;
+  --accent:#D98A98;--accent-ink:#1B1A1E;--chip:#242227;--tile:#222025;--shade:rgba(0,0,0,.78);
+}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-bottom:env(safe-area-inset-bottom,0px)}
+img{max-width:100%;display:block}
+.wrap{max-width:1240px;margin:0 auto}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);padding-block:calc(14px + env(safe-area-inset-top,0px)) 10px;border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+.bar{max-width:1240px;margin:0 auto;display:flex;gap:12px 16px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;line-height:1.1;margin-right:auto;text-decoration:none;color:inherit}
+.brand b{font:400 26px/1 var(--serif);letter-spacing:.14em}
+.brand span{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.search{flex:1 1 260px;max-width:420px;position:relative}
+.search input{width:100%;height:42px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:21px;padding:0 16px 0 40px;font:inherit}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.search svg{position:absolute;left:14px;top:13px;width:16px;height:16px;stroke:var(--muted)}
+.mgr{height:42px;display:inline-flex;align-items:center;padding:0 18px;border-radius:21px;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-weight:600;white-space:nowrap}
+.mgr .sm{display:none}
+@media (max-width:560px){.search{order:3;flex-basis:100%;max-width:none}.mgr{height:38px;padding:0 14px}.mgr .lg{display:none}.mgr .sm{display:inline}.brand b{font-size:22px}}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav.groups{display:flex;gap:6px;overflow-x:auto;padding-block:14px 4px;scrollbar-width:none}
+nav.groups::-webkit-scrollbar,.chips::-webkit-scrollbar{display:none}
+.group{border:0;background:none;color:var(--muted);font:500 13px var(--sans);letter-spacing:.1em;text-transform:uppercase;padding:8px 12px;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+.group[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-block:10px 4px;scrollbar-width:none}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:18px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer;white-space:nowrap;display:inline-flex;gap:8px;align-items:baseline}
+.chip small{color:var(--muted);font-variant-numeric:tabular-nums;font-size:12px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip[aria-pressed="true"] small{color:inherit;opacity:.7}
+.head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:22px 14px}
+.head h1{font:400 clamp(26px,4vw,38px)/1.15 var(--serif);margin:0;text-wrap:balance}
+.head p{margin:0;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:24px 14px}
+@media (max-width:480px){.grid{grid-template-columns:1fr 1fr;gap:18px 10px}}
+.card{display:flex;flex-direction:column;gap:8px;background:none;border:0;padding:0;text-align:left;color:inherit;font:inherit;cursor:pointer}
+.ph{position:relative;width:100%;aspect-ratio:3/4;background:var(--tile);border-radius:4px;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover}
+.card:hover .ph img{transform:scale(1.02)}
+@media (prefers-reduced-motion:no-preference){.ph img{transition:transform .3s}}
+.badge{position:absolute;right:8px;bottom:8px;background:var(--shade);color:#fff;border-radius:12px;font-size:12px;padding:2px 9px;font-variant-numeric:tabular-nums}
+.nm{font-size:14px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{font-size:12px;color:var(--muted);margin-top:-4px}
+.more{display:flex;justify-content:center;padding-block:32px 48px}
+.btn{height:44px;padding:0 22px;border-radius:22px;border:1px solid var(--ink);background:none;color:var(--ink);font:500 14px var(--sans);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn.fill{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.empty{padding:60px 0;text-align:center;color:var(--muted)}
+footer{border-top:1px solid var(--line);padding-block:22px 40px;color:var(--muted);font-size:13px;display:flex;gap:10px 24px;flex-wrap:wrap;justify-content:space-between}
+footer a{color:inherit}
+/* product view */
+.dlg{position:fixed;inset:0;z-index:20;background:var(--shade);display:flex;align-items:center;justify-content:center;padding:16px}
+.sheet{position:relative;background:var(--surface);color:var(--ink);border-radius:8px;max-width:1000px;width:100%;max-height:calc(100dvh - 32px);overflow:auto;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+@media (max-width:760px){.dlg{padding:0;align-items:stretch}.sheet{grid-template-columns:1fr;border-radius:0;max-height:100dvh}}
+.gal{position:relative;background:var(--tile);min-width:0}
+.track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;aspect-ratio:3/4}
+.track::-webkit-scrollbar{display:none}
+.track img{flex:0 0 100%;width:100%;height:100%;object-fit:contain;scroll-snap-align:center;background:var(--tile)}
+.nav{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:21px;border:0;background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.18)}
+.nav.prev{left:10px}.nav.next{right:10px}
+.counter{position:absolute;left:12px;top:12px;background:var(--shade);color:#fff;border-radius:12px;font-size:12px;padding:2px 10px;font-variant-numeric:tabular-nums}
+.thumbs{display:flex;gap:6px;overflow-x:auto;padding:8px;scrollbar-width:thin;background:var(--surface)}
+.thumbs button{flex:0 0 52px;aspect-ratio:3/4;border:1px solid var(--line);border-radius:3px;padding:0;overflow:hidden;cursor:pointer;background:var(--tile)}
+.thumbs img{width:100%;height:100%;object-fit:cover}
+.thumbs button[aria-current="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.info{padding:28px 24px 24px;display:flex;flex-direction:column;gap:14px}
+@media (max-width:760px){.info{padding:16px 16px 28px}}
+.info .sec{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.info h2{font:400 24px/1.25 var(--serif);margin:0;text-wrap:balance}
+.info dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:14px}
+.info dt{color:var(--muted)}.info dd{margin:0;font-variant-numeric:tabular-nums}
+.acts{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.acts .lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.btn.tg,.btn.wa{border:0;color:#fff;font-weight:600;gap:10px;height:48px}
+.btn.tg{background:#2B8FD4}.btn.wa{background:#1FA15A}
+.btn.tg:hover{background:#2380C2}.btn.wa:hover{background:#1A8D4E}
+.btn svg{width:20px;height:20px;fill:currentColor;flex:none}
+.linkbtn{background:none;border:0;padding:4px 0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;align-self:center}
+.hint{font-size:12px;color:var(--muted);margin:0;word-break:break-word}
+.x{position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:20px;border:0;background:var(--chip);color:var(--ink);font-size:24px;line-height:1;cursor:pointer;z-index:2}
+body.lock{overflow:hidden}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="bar">
+    <a class="brand" href="./"><b>BRANDORA</b><span>Полный каталог</span></a>
+    <label class="search" for="q"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Поиск: Birkin, лоферы, пуховик…" autocomplete="off" aria-label="Поиск по каталогу"></label>
+    <a class="mgr" href="https://t.me/manager_brandora" target="_blank" rel="noopener"><span class="lg">Написать менеджеру</span><span class="sm">Менеджер</span></a>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="groups" id="groups" aria-label="Разделы"></nav>
+  <div class="chips" id="chips"></div>
+  <div class="head"><h1 id="title">Новые поступления</h1><p id="count"></p></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden>Ничего не нашлось. Попробуйте другое слово или напишите менеджеру — найдём под заказ.</div>
+  <div class="more"><button class="btn" id="more" hidden>Показать ещё</button></div>
+  <footer><span id="upd"></span><span>Менеджер: <a href="https://t.me/manager_brandora" target="_blank" rel="noopener">@manager_brandora</a> · Канал: <a href="https://t.me/brandora_all" target="_blank" rel="noopener">t.me/brandora_all</a></span></footer>
+</main>
+
+<div class="dlg" id="dlg" hidden role="dialog" aria-modal="true" aria-labelledby="dn">
+  <div class="sheet">
+    <button class="x" id="dx" aria-label="Закрыть">×</button>
+    <div class="gal">
+      <div class="track" id="track"></div>
+      <button class="nav prev" id="prev" aria-label="Предыдущее фото">‹</button>
+      <button class="nav next" id="next" aria-label="Следующее фото">›</button>
+      <span class="counter" id="counter"></span>
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+    <div class="info">
+      <div class="sec" id="dsec"></div>
+      <h2 id="dn"></h2>
+      <dl id="ddl"></dl>
+      <div class="acts">
+        <span class="lbl">Заказать у менеджера</span>
+        <a class="btn tg" id="dtg" href="https://t.me/manager_brandora" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.5 13.2 1.8 11.7c-1-.3-1-1 .2-1.5L20.6 3c.9-.3 1.6.2 1.3 1.3z"/></svg>Написать в Telegram</a>
+        <a class="btn wa" id="dwa" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2s.2-1.1.2-1.2-.2-.2-.4-.3z"/></svg>Написать в WhatsApp</a>
+        <button class="linkbtn" id="dcopy">Скопировать ссылку на товар</button>
+      </div>
+      <p class="hint" id="dhint"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+(async function(){
+  const WA_PHONE='79089015076'; // номер WhatsApp менеджера, только цифры с кодом страны
+  const $=id=>document.getElementById(id);
+  let D;
+  try{D=await (await fetch('data.json',{cache:'no-cache'})).json();}
+  catch(e){$('grid').innerHTML='<p class="empty">Каталог не загрузился. Обновите страницу.</p>';return;}
+  const SEC=D.sections, byK={}; SEC.forEach(s=>byK[s.k]=s);
+  const items=D.items.filter(it=>byK[it.s]).sort((a,b)=>b.id-a.id);
+  const idx={}; items.forEach(it=>idx[it.id]=it);
+  const cnt={}; items.forEach(it=>cnt[it.s]=(cnt[it.s]||0)+1);
+  const groups=[...new Set(SEC.map(s=>s.g))];
+  const PAGE=48; let view={type:'new'}, shown=0, list=[];
+  const src=(it,n)=>`p/${it.id}/${n}.webp`;
+  const post=id=>'https://t.me/brandora_all/'+id;
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fmt=d=>d?d.split('-').reverse().join('.'):'';
+  $('upd').textContent='Обновлено: '+D.updated+' · '+items.length.toLocaleString('ru')+' моделей';
+
+  function renderNav(){
+    const g=view.type==='sec'?byK[view.k].g:view.type==='group'?view.g:null;
+    $('groups').innerHTML=[`<button class="group" data-g="" aria-pressed="${view.type==='new'}">Новое</button>`]
+      .concat(groups.map(x=>`<button class="group" data-g="${esc(x)}" aria-pressed="${g===x}">${esc(x)}</button>`)).join('');
+    const secs=g?SEC.filter(s=>s.g===g):SEC;
+    $('chips').innerHTML=secs.filter(s=>cnt[s.k]).map(s=>`<button class="chip" data-k="${s.k}" aria-pressed="${view.k===s.k}">${esc(s.t)}<small>${cnt[s.k]}</small></button>`).join('');
+  }
+  function compute(){
+    const q=$('q').value.trim().toLowerCase();
+    if(q){const ws=q.split(/\s+/);list=items.filter(it=>{const h=(it.n+' '+byK[it.s].t+' br-'+it.id).toLowerCase();return ws.every(w=>h.includes(w))});$('title').textContent='Поиск: '+$('q').value.trim();}
+    else if(view.type==='sec'){list=items.filter(it=>it.s===view.k);$('title').textContent=byK[view.k].t;}
+    else if(view.type==='group'){const ks=new Set(SEC.filter(s=>s.g===view.g).map(s=>s.k));list=items.filter(it=>ks.has(it.s));$('title').textContent=view.g;}
+    else{list=items.filter(it=>it.s!=='reviews');$('title').textContent='Новые поступления';}
+    $('count').textContent=list.length.toLocaleString('ru')+' моделей';
+    shown=0;$('grid').innerHTML='';$('empty').hidden=list.length>0;page();
+  }
+  function page(){
+    const html=list.slice(shown,shown+PAGE).map(it=>`<button class="card" data-id="${it.id}"><div class="ph"><img src="${src(it,0)}" alt="${esc(it.n)}" loading="lazy" decoding="async">${it.v?'<span class="badge">▶ Видео</span>':it.k>1?`<span class="badge">${it.k} фото</span>`:''}</div><div class="nm">${esc(it.n)}</div><div class="meta">${esc(byK[it.s].t)}</div></button>`).join('');
+    $('grid').insertAdjacentHTML('beforeend',html);shown+=PAGE;$('more').hidden=shown>=list.length;
+  }
+  function go(v,push=true){view=v;$('q').value='';renderNav();compute();
+    if(push)history.replaceState(null,'',v.type==='sec'?'#'+v.k:location.pathname);
+    window.scrollTo({top:0});}
+  $('groups').onclick=e=>{const b=e.target.closest('.group');if(b)go(b.dataset.g?{type:'group',g:b.dataset.g}:{type:'new'})};
+  $('chips').onclick=e=>{const b=e.target.closest('.chip');if(b)go({type:'sec',k:b.dataset.k})};
+  $('more').onclick=page;
+  let t;$('q').oninput=()=>{clearTimeout(t);t=setTimeout(compute,180)};
+  $('grid').onclick=e=>{const c=e.target.closest('.card');if(c)open(idx[c.dataset.id])};
+
+  // gallery
+  let cur=null, pos=0, last=null;
+  const track=$('track');
+  function show(i,smooth=true){pos=Math.max(0,Math.min(cur.k-1,i));track.scrollTo({left:pos*track.clientWidth,behavior:smooth?'smooth':'auto'});update();}
+  function update(){$('counter').textContent=(pos+1)+' / '+cur.k;$('prev').hidden=pos===0;$('next').hidden=pos>=cur.k-1;
+    [...$('thumbs').children].forEach((b,k)=>b.setAttribute('aria-current',k===pos));
+    const th=$('thumbs').children[pos];if(th)th.scrollIntoView({block:'nearest',inline:'nearest'});}
+  let st;track.addEventListener('scroll',()=>{clearTimeout(st);st=setTimeout(()=>{const p=Math.round(track.scrollLeft/track.clientWidth);if(p!==pos){pos=p;update();}},80)});
+  $('prev').onclick=()=>show(pos-1);$('next').onclick=()=>show(pos+1);
+  $('thumbs').onclick=e=>{const b=e.target.closest('button');if(b)show([...$('thumbs').children].indexOf(b))};
+  function open(it,push=true){
+    last=document.activeElement;cur=it;pos=0;
+    const n=it.k||1;
+    track.innerHTML=Array.from({length:n},(_,i)=>`<img src="${src(it,i)}" alt="${esc(it.n)} — фото ${i+1}" ${i>1?'loading="lazy"':''}>`).join('');
+    $('thumbs').innerHTML=n>1?Array.from({length:n},(_,i)=>`<button aria-label="Фото ${i+1}"><img src="${src(it,i)}" alt="" loading="lazy"></button>`).join(''):'';
+    $('thumbs').hidden=n<2;$('counter').hidden=n<2;
+    $('dsec').textContent=byK[it.s].t;$('dn').textContent=it.n;
+    $('ddl').innerHTML=(it.z?`<dt>Размеры</dt><dd>${esc(it.z.replace(/^размер[ыа]?:?\s*/i,''))}</dd>`:'')+`<dt>Артикул</dt><dd>BR-${it.id}</dd>`+(it.d?`<dt>Добавлено</dt><dd>${fmt(it.d)}</dd>`:'');
+    const msg='Здравствуйте! Хочу заказать: '+it.n+' (арт. BR-'+it.id+')\n'+location.origin+location.pathname+'#br-'+it.id;
+    $('dwa').href='https://wa.me/'+WA_PHONE+'?text='+encodeURIComponent(msg);
+    $('dtg').onclick=()=>{try{navigator.clipboard.writeText(msg)}catch(e){}};
+    $('dcopy').textContent='Скопировать ссылку на товар';
+    $('dhint').textContent='В WhatsApp название и артикул подставятся сами. Для Telegram ссылка на товар копируется при нажатии — просто вставьте её в чат.';
+    $('dlg').hidden=false;document.body.classList.add('lock');track.scrollLeft=0;update();$('dx').focus();
+    if(push)history.pushState({p:it.id},'','#br-'+it.id);
+  }
+  $('dcopy').onclick=async()=>{const url=location.origin+location.pathname+'#br-'+cur.id;const txt=cur.n+' (BR-'+cur.id+') '+url;
+    try{await navigator.clipboard.writeText(txt);$('dcopy').textContent='Ссылка скопирована';}
+    catch(e){$('dhint').textContent=txt;}};
+  function close(back=true){$('dlg').hidden=true;document.body.classList.remove('lock');if(last)last.focus();if(back&&history.state&&history.state.p)history.back();}
+  $('dx').onclick=()=>close();$('dlg').onclick=e=>{if(e.target===$('dlg'))close()};
+  document.addEventListener('keydown',e=>{if($('dlg').hidden)return;if(e.key==='Escape')close();if(e.key==='ArrowRight')show(pos+1);if(e.key==='ArrowLeft')show(pos-1);});
+  window.addEventListener('popstate',()=>{if(!$('dlg').hidden)close(false)});
+
+  const h=location.hash.slice(1);
+  if(h.startsWith('br-')&&idx[h.slice(3)]){go({type:'sec',k:idx[h.slice(3)].s},false);open(idx[h.slice(3)],false);}
+  else go(byK[h]?{type:'sec',k:h}:{type:'new'},false);
+})();
+</script>
+</body>
+</html>
