@@ -20,6 +20,7 @@ NAMES = os.path.join(ROOT, 'names.json')
 SECTIONS = json.load(open(os.path.join(ROOT, 'sections.json'), encoding='utf-8'))
 CHANNEL = 'brandora_all'
 MAX_PHOTOS = 12
+IGNORED_TOPICS = {1, 26805}  # General, «Наши обзоры» — не показываем на сайте
 WIDTH = 480
 S = requests.Session()
 S.headers['User-Agent'] = 'Mozilla/5.0 (catalog builder)'
@@ -150,7 +151,7 @@ def main():
         if aid in have or (not full and aid <= data['maxid']):
             continue
         if d['reply'] not in tmap:
-            if d['reply'] and d['photos']:
+            if d['reply'] and d['photos'] and d['reply'] not in IGNORED_TOPICS:
                 unknown.add(d['reply'])
             continue
         if not d['photos']:
@@ -182,7 +183,7 @@ def main():
                   ai_name(os.path.join(SITE, 'p', str(aid), '0.webp'), d['text'], stitle[k]) or fallback_name(d['text'], stitle[k]))
             names[str(aid)] = nm
         new.append({'id': aid, 's': k, 'n': nm, 'z': sizes(d['text']), 'd': d['date'], 'v': 1 if d['video'] else 0, 'k': n})
-    data['items'] = new + data['items']
+    data['items'] = [it for it in new + data['items'] if it['s'] in stitle]
     data['items'].sort(key=lambda it: -it['id'])
     data['maxid'] = maxid
     data['sections'] = [{'g': s['g'], 'k': s['k'], 't': s['t']} for s in SECTIONS]
