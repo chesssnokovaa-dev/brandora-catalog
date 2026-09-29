@@ -103,26 +103,80 @@ def fallback_name(text, sec_title):
     return sec_title
 
 
-def ai_name(path, text, sec_title):
+# Модели для названий по фото: сначала ANTHROPIC_MODEL (если задана), затем по очереди эти.
+AI_MODELS = ['claude-sonnet-5-5', 'claude-opus-5-5', 'claude-haiku-4-5-20251001']
+AI_PHOTOS = 3        # сколько фото товара отправлять модели
+AI_RENAME_LIMIT = 400  # сколько товаров с простым названием переименовывать за запуск
+AI = {'models': None, 'off': False}
+
+AI_PROMPT = (
+    'Это фото одного товара из каталога люксовых вещей. Раздел каталога: {sec}. Подпись поста: {text}.\n'
+    'Дай подробное название товара по-русски по схеме: тип + бренд + модель (только если уверен) + цвет/материал/деталь.\n'
+    'Примеры правильного стиля: «Сумка Chanel Classic Flap бежевая», «Лоферы Loro Piana Summer Charms серые», '
+    '«Пуховик Moncler чёрный с капюшоном», «Солнцезащитные очки Celine Triomphe черепаховые», '
+    '«Ботильоны Hermes на каблуке с пряжкой Kelly (разные цвета)», «Костюм Miu Miu шерстяной (жакет + юбка) серый».\n'
+    'Бренд бери из раздела, подписи поста или логотипа на фото. Если модель не узнаёшь — не выдумывай, пиши тип + бренд + цвет. '
+    'Если на фото несколько расцветок — добавь «(разные цвета)» или перечисли цвета в скобках.\n'
+    'Ответь только названием, без кавычек и пояснений.')
+
+
+def ai_name(folder, text, sec_title):
+    """Название по фото через Anthropic API. None — если ключа нет или API не ответило (тогда остаётся простое название)."""
     key = os.environ.get('ANTHROPIC_API_KEY')
-    if not key:
+    if not key or AI['off']:
         return None
-    b64 = base64.b64encode(open(path, 'rb').read()).decode()
-    prompt = ('Это фото товара из каталога люксовых вещей. Раздел: ' + sec_title + '. Подпись поста: ' + (text or 'нет') +
-              '. Дай короткое название товара по-русски: тип + бренд + модель (если узнаёшь) + цвет, например '
-              '«Сумка Chanel Classic Flap бежевая» или «Лоферы Loro Piana Summer Charms серые». '
-              'Не выдумывай модель, если не уверен. Ответь только названием, без кавычек.')
-    try:
-        r = requests.post('https://api.anthropic.com/v1/messages', timeout=60, headers={
-            'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-            json={'model': os.environ.get('ANTHROPIC_MODEL', 'claude-sonnet-4-5'), 'max_tokens': 60, 'messages': [{'role': 'user', 'content': [
-                {'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/webp', 'data': b64}},
-                {'type': 'text', 'text': prompt}]}]})
-        t = r.json()['content'][0]['text'].strip().strip('«»"')
-        return t[:90] if t else None
-    except Exception as e:
-        print('ai name failed', e, flush=True)
+    if AI['models'] is None:
+        env = os.environ.get('ANTHROPIC_MODEL', '').strip()
+        AI['models'] = ([env] if env else []) + [m for m in AI_MODELS if m != env]
+    content = []
+    for n in range(AI_PHOTOS):
+        fn = os.path.join(folder, f'{n}.webp')
+        if os.path.exists(fn):
+            content.append({'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/webp',
+                                                        'data': base64.b64encode(open(fn, 'rb').read()).decode()}})
+    if not content:
         return None
+    content.append({'type': 'text', 'text': AI_PROMPT.format(sec=sec_title, text=text or 'нет')})
+    while AI['models']:
+        model = AI['models'][0]
+        for attempt in range(4):
+            try:
+                r = requests.post('https://api.anthropic.com/v1/messages', timeout=90, headers={
+                    'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
+                    json={'model': model, 'max_tokens': 100, 'messages': [{'role': 'user', 'content': content}]})
+            except Exception as e:
+                print(f'AI [{model}] сетевая ошибка: {e}', flush=True)
+                time.sleep(2 + 3 * attempt)
+                continue
+            if r.status_code == 200:
+                try:
+                    t = ''.join(b.get('text', '') for b in r.json()['content']).strip().split('\n')[0].strip().strip('«»"\'')
+                except Exception as e:
+                    print(f'AI [{model}] непонятный ответ: {e} {r.text[:300]}', flush=True)
+                    return None
+                return t[:120] or None
+            try:
+                err = r.json().get('error', {})
+            except Exception:
+                err = {}
+            msg = f"AI [{model}] HTTP {r.status_code} {err.get('type', '')}: {err.get('message', r.text[:300])}"
+            print(msg, flush=True)
+            if r.status_code in (401, 403):
+                print('AI: ключ не принят — названия по фото отключены до следующего запуска', flush=True)
+                AI['off'] = True
+                return None
+            if r.status_code == 404 or (r.status_code == 400 and 'model' in str(err.get('message', '')).lower()):
+                break  # модель недоступна — пробуем следующую
+            if r.status_code == 400:
+                return None  # ошибка именно в этом запросе (например, фото) — оставляем простое название
+            time.sleep(5 * (attempt + 1))  # 429 / 5xx / 529 — ждём и повторяем
+        else:
+            return None  # модель есть, но сейчас не отвечает — не сжигаем остальные модели
+        print(f'AI: модель {model} недоступна, пробую следующую', flush=True)
+        AI['models'].pop(0)
+    print('AI: ни одна модель не доступна — названия по фото отключены до следующего запуска', flush=True)
+    AI['off'] = True
+    return None
 
 
 def sizes(t):
@@ -177,13 +231,31 @@ def main():
         if n == 0:
             continue
         aid, k = d['aid'], tmap[d['reply']]
-        nm = names.get(str(aid))
-        if not nm:
-            nm = ('Видеообзор' if k == 'reviews' else
-                  ai_name(os.path.join(SITE, 'p', str(aid), '0.webp'), d['text'], stitle[k]) or fallback_name(d['text'], stitle[k]))
-            names[str(aid)] = nm
-        new.append({'id': aid, 's': k, 'n': nm, 'z': sizes(d['text']), 'd': d['date'], 'v': 1 if d['video'] else 0, 'k': n})
+        it = {'id': aid, 's': k, 'n': names.get(str(aid)), 'z': sizes(d['text']), 'd': d['date'], 'v': 1 if d['video'] else 0, 'k': n}
+        if not it['n']:
+            nm = 'Видеообзор' if k == 'reviews' else ai_name(os.path.join(SITE, 'p', str(aid)), d['text'], stitle[k])
+            if nm:
+                it['n'] = names[str(aid)] = nm
+            else:
+                # простое название из подписи; в names.json не пишем, чтобы потом переименовать по фото
+                it['n'], it['f'] = fallback_name(d['text'], stitle[k]), 1
+        new.append(it)
     data['items'] = [it for it in new + data['items'] if it['s'] in stitle]
+    # Товары с простым названием (f=1) переименовываем по фото, если API доступно
+    renamed = 0
+    todo = sorted([it for it in data['items'] if it.get('f')], key=lambda it: -it['id'])[:AI_RENAME_LIMIT]
+    if todo and os.environ.get('ANTHROPIC_API_KEY') and not AI['off']:
+        def rename(it):
+            h = parse(it['id'], fetch(it['id']))
+            return it, ai_name(os.path.join(SITE, 'p', str(it['id'])), h.get('text', ''), stitle[it['s']])
+        with ThreadPoolExecutor(4) as ex:
+            for it, nm in ex.map(rename, todo):
+                if nm:
+                    print(f"переименован {it['id']}: {it['n']} → {nm}", flush=True)
+                    it['n'] = names[str(it['id'])] = nm
+                    it.pop('f', None)
+                    renamed += 1
+    flagged = sum(1 for it in data['items'] if it.get('f'))
     data['items'].sort(key=lambda it: -it['id'])
     data['maxid'] = maxid
     data['sections'] = [{'g': s['g'], 'k': s['k'], 't': s['t']} for s in SECTIONS]
@@ -191,7 +263,7 @@ def main():
     data['unknown_topics'] = sorted(unknown)
     json.dump(data, open(DATA, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     json.dump(names, open(NAMES, 'w', encoding='utf-8'), ensure_ascii=False, indent=0)
-    print(json.dumps({'added': len(new), 'total': len(data['items']), 'maxid': maxid, 'unknown_topics': sorted(unknown)}, ensure_ascii=False))
+    print(json.dumps({'added': len(new), 'renamed': renamed, 'still_simple': flagged, 'total': len(data['items']), 'maxid': maxid, 'unknown_topics': sorted(unknown)}, ensure_ascii=False))
 
 
 if __name__ == '__main__':
