@@ -104,7 +104,7 @@ def fallback_name(text, sec_title):
 
 
 # Модели для названий по фото: сначала ANTHROPIC_MODEL (если задана), затем по очереди эти.
-AI_MODELS = ['claude-sonnet-5-5', 'claude-opus-5-5', 'claude-haiku-4-5-20251001']
+AI_MODELS = ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-4-5']
 AI_PHOTOS = 3        # сколько фото товара отправлять модели
 AI_RENAME_LIMIT = 400  # сколько товаров с простым названием переименовывать за запуск
 AI = {'models': None, 'off': False}
@@ -118,6 +118,15 @@ AI_PROMPT = (
     'Бренд бери из раздела, подписи поста или логотипа на фото. Если модель не узнаёшь — не выдумывай, пиши тип + бренд + цвет. '
     'Если на фото несколько расцветок — добавь «(разные цвета)» или перечисли цвета в скобках.\n'
     'Ответь только названием, без кавычек и пояснений.')
+
+
+def ai_body(model, content):
+    # Модели 4.6+ думают перед ответом, поэтому max_tokens с запасом; effort=low — задача простая.
+    # Haiku 4.5 параметр effort не поддерживает.
+    body = {'model': model, 'max_tokens': 2000, 'messages': [{'role': 'user', 'content': content}]}
+    if 'haiku' not in model:
+        body['output_config'] = {'effort': 'low'}
+    return body
 
 
 def ai_name(folder, text, sec_title):
@@ -144,7 +153,7 @@ def ai_name(folder, text, sec_title):
             try:
                 r = requests.post('https://api.anthropic.com/v1/messages', timeout=90, headers={
                     'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-                    json={'model': model, 'max_tokens': 100, 'messages': [{'role': 'user', 'content': content}]})
+                    json=ai_body(model, content))
             except Exception as e:
                 print(f'AI [{model}] сетевая ошибка: {e}', flush=True)
                 time.sleep(2 + 3 * attempt)
@@ -157,7 +166,8 @@ def ai_name(folder, text, sec_title):
                     return None
                 if not t:
                     j = r.json()
-                    print(f"AI [{model}] пустой ответ: stop_reason={j.get('stop_reason')} {json.dumps(j.get('content'), ensure_ascii=False)[:300]}", flush=True)
+                    why = j.get('stop_details') if j.get('stop_reason') == 'refusal' else ''
+                    print(f"AI [{model}] пустой ответ: stop_reason={j.get('stop_reason')} {why or ''}", flush=True)
                     return None
                 return t[:120]
             try:
