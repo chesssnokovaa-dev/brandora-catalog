@@ -135,6 +135,7 @@ def ai_name(folder, text, sec_title):
             content.append({'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/webp',
                                                         'data': base64.b64encode(open(fn, 'rb').read()).decode()}})
     if not content:
+        print(f'AI: нет фото в {folder}', flush=True)
         return None
     content.append({'type': 'text', 'text': AI_PROMPT.format(sec=sec_title, text=text or 'нет')})
     while AI['models']:
@@ -154,7 +155,11 @@ def ai_name(folder, text, sec_title):
                 except Exception as e:
                     print(f'AI [{model}] непонятный ответ: {e} {r.text[:300]}', flush=True)
                     return None
-                return t[:120] or None
+                if not t:
+                    j = r.json()
+                    print(f"AI [{model}] пустой ответ: stop_reason={j.get('stop_reason')} {json.dumps(j.get('content'), ensure_ascii=False)[:300]}", flush=True)
+                    return None
+                return t[:120]
             try:
                 err = r.json().get('error', {})
             except Exception:
@@ -259,7 +264,7 @@ def main():
     data['items'].sort(key=lambda it: -it['id'])
     data['maxid'] = maxid
     data['sections'] = [{'g': s['g'], 'k': s['k'], 't': s['t']} for s in SECTIONS]
-    data['updated'] = datetime.datetime.utcnow().strftime('%d.%m.%Y %H:%M UTC')
+    data['updated'] = datetime.datetime.now(datetime.timezone.utc).strftime('%d.%m.%Y %H:%M UTC')
     data['unknown_topics'] = sorted(unknown)
     json.dump(data, open(DATA, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     json.dump(names, open(NAMES, 'w', encoding='utf-8'), ensure_ascii=False, indent=0)
