@@ -20,7 +20,8 @@ NAMES = os.path.join(ROOT, 'names.json')
 SECTIONS = json.load(open(os.path.join(ROOT, 'sections.json'), encoding='utf-8'))
 CHANNEL = 'brandora_all'
 MAX_PHOTOS = 12
-IGNORED_TOPICS = {1, 26805}  # General, «Наши обзоры» — не показываем на сайте
+IGNORED_TOPICS = {26805}  # «Наши обзоры» — не показываем на сайте
+GENERAL = 1  # посты в общей ленте группы (без темы) идут в раздел с темой 1
 WIDTH = 480
 S = requests.Session()
 S.headers['User-Agent'] = 'Mozilla/5.0 (catalog builder)'
@@ -61,9 +62,21 @@ def parse(i, h):
     return d
 
 
+def more_ahead(i):
+    """Есть ли сообщения дальше i? Нужна, чтобы не останавливаться на пропуске из удалённых сообщений."""
+    probe = list(range(i, i + 3000, 100)) + list(range(i + 3000, i + 30000, 1000))
+    with ThreadPoolExecutor(12) as ex:
+        return any(not d.get('nf') for d in ex.map(lambda k: parse(k, fetch(k)), probe))
+
+
 def scan(start, stop_after_missing):
     out, i, miss = {}, start, 0
-    while miss < stop_after_missing:
+    while True:
+        if miss >= stop_after_missing:
+            if not more_ahead(i):
+                break
+            print(f'пропуск из {miss} удалённых сообщений до {i}, сканирую дальше', flush=True)
+            miss = 0
         ids = list(range(i, i + 100))
         with ThreadPoolExecutor(12) as ex:
             res = list(ex.map(lambda k: parse(k, fetch(k)), ids))
@@ -219,6 +232,8 @@ def main():
         aid = min(pids)
         if aid in have or (not full and aid <= data['maxid']):
             continue
+        if d['reply'] is None:
+            d['reply'] = GENERAL
         if d['reply'] not in tmap:
             if d['reply'] and d['photos'] and d['reply'] not in IGNORED_TOPICS:
                 unknown.add(d['reply'])
@@ -242,9 +257,8 @@ def main():
 
     with ThreadPoolExecutor(10) as ex:
         results = list(ex.map(process, sorted(albums.values(), key=lambda x: x['aid'])))
-    for d, n in results:
-        if n == 0:
-            continue
+    def name_new(dn):
+        d, n = dn
         aid, k = d['aid'], tmap[d['reply']]
         it = {'id': aid, 's': k, 'n': names.get(str(aid)), 'z': sizes(d['text']), 'd': d['date'], 'v': 1 if d['video'] else 0, 'k': n}
         if not it['n']:
@@ -254,7 +268,11 @@ def main():
             else:
                 # простое название из подписи; в names.json не пишем, чтобы потом переименовать по фото
                 it['n'], it['f'] = fallback_name(d['text'], stitle[k]), 1
-        new.append(it)
+        return it
+
+    with ThreadPoolExecutor(6) as ex:
+        new = list(ex.map(name_new, [(d, n) for d, n in results if n > 0]))
+    print(f'новых товаров: {len(new)}, с простым названием: {sum(1 for it in new if it.get("f"))}', flush=True)
     data['items'] = [it for it in new + data['items'] if it['s'] in stitle]
     # Товары с простым названием (f=1) переименовываем по фото, если API доступно
     renamed = 0
