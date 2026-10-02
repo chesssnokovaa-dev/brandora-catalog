@@ -189,6 +189,10 @@ def ai_name(folder, text, sec_title):
                 err = {}
             msg = f"AI [{model}] HTTP {r.status_code} {err.get('type', '')}: {err.get('message', r.text[:300])}"
             print(msg, flush=True)
+            if 'credit balance' in str(err.get('message', '')).lower():
+                print('AI: на балансе API закончились деньги — названия по фото отключены до следующего запуска', flush=True)
+                AI['off'] = True
+                return None
             if r.status_code in (401, 403):
                 print('AI: ключ не принят — названия по фото отключены до следующего запуска', flush=True)
                 AI['off'] = True
