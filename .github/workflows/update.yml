@@ -1,9 +1,14 @@
 name: Обновление каталога
 
+# Запускается только вручную: Actions → «Обновление каталога» → Run workflow.
 on:
-  schedule:
-    - cron: '50 4 * * *'   # каждый день 06:50 по Мадриду (летнее время)
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'update — забрать новые посты из Telegram и переименовать; rename — только переименовать товары с простыми названиями'
+        type: choice
+        options: [update, rename]
+        default: update
 
 permissions:
   contents: write
@@ -30,7 +35,7 @@ jobs:
       - name: Собрать новые товары из Telegram
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python scripts/catalog.py
+        run: python scripts/catalog.py ${{ inputs.mode == 'rename' && '--rename-only' || '' }}
       - name: Сохранить изменения
         run: |
           git config user.name "brandora-bot"
