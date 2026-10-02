@@ -119,7 +119,7 @@ def fallback_name(text, sec_title):
 # Модели для названий по фото: сначала ANTHROPIC_MODEL (если задана), затем по очереди эти.
 AI_MODELS = ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-4-5']
 AI_PHOTOS = 3        # сколько фото товара отправлять модели
-AI_RENAME_LIMIT = 400  # сколько товаров с простым названием переименовывать за запуск
+AI_RENAME_LIMIT = 400  # сколько товаров с простым названием переименовывать за обычный запуск (с --rename-only — все)
 AI = {'models': None, 'off': False}
 
 AI_PROMPT = (
@@ -223,8 +223,9 @@ def main():
     stitle = {s['k']: s['t'] for s in SECTIONS}
     names = json.load(open(NAMES, encoding='utf-8')) if os.path.exists(NAMES) else {}
     data = json.load(open(DATA, encoding='utf-8')) if os.path.exists(DATA) else {'items': [], 'maxid': 0}
-    full = not data['items'] or '--full' in sys.argv
-    raw = scan(1 if full else data['maxid'] + 1, 400 if full else 150)
+    rename_only = '--rename-only' in sys.argv
+    full = not rename_only and (not data['items'] or '--full' in sys.argv)
+    raw = {} if rename_only else scan(1 if full else data['maxid'] + 1, 400 if full else 150)
     have = {it['id'] for it in data['items']}
     albums, maxid = {}, data['maxid']
     unknown = set()
@@ -280,12 +281,12 @@ def main():
     data['items'] = [it for it in new + data['items'] if it['s'] in stitle]
     # Товары с простым названием (f=1) переименовываем по фото, если API доступно
     renamed = 0
-    todo = sorted([it for it in data['items'] if it.get('f')], key=lambda it: -it['id'])[:AI_RENAME_LIMIT]
+    todo = sorted([it for it in data['items'] if it.get('f')], key=lambda it: -it['id'])[:None if rename_only else AI_RENAME_LIMIT]
     if todo and os.environ.get('ANTHROPIC_API_KEY') and not AI['off']:
         def rename(it):
             h = parse(it['id'], fetch(it['id']))
             return it, ai_name(os.path.join(SITE, 'p', str(it['id'])), h.get('text', ''), stitle[it['s']])
-        with ThreadPoolExecutor(4) as ex:
+        with ThreadPoolExecutor(6) as ex:
             for it, nm in ex.map(rename, todo):
                 if nm:
                     print(f"переименован {it['id']}: {it['n']} → {nm}", flush=True)
